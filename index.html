@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transport Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Upgraded Color Palette */
+            --bg-color: #f8fafc;
+            --sidebar-bg: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            --sidebar-hover: rgba(255, 255, 255, 0.08);
+            --active-blue: #3b82f6;
+            --active-blue-hover: #2563eb;
+            --active-dark: rgba(255, 255, 255, 0.1);
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            --success: #10b981;
+            --success-hover: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border-light: #e2e8f0;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        body { font-family: 'Inter', sans-serif; margin: 0; height: 100vh; overflow: hidden; background-color: var(--bg-color); color: var(--text-main); -webkit-font-smoothing: antialiased; }
+        a { text-decoration: none; color: inherit; }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- UPDATED LOGIN VIEW --- */
+        #login-view { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            width: 100%; 
+            /* Bus Background Image with a dark overlay for text readability */
+            background: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.8)), 
+                        url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2069&auto=format&fit=crop') center/cover no-repeat; 
+        }
+        
+        .form-container { 
+            /* Frosted Glass Effect */
+            background-color: rgba(255, 255, 255, 0.92); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 48px 40px; 
+            border-radius: 24px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25); 
+            width: 100%; 
+            max-width: 400px; 
+            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+        }
+        .form-container h1 { text-align: center; color: #0f172a; font-size: 34px; margin: 0 0 8px; font-weight: 800; letter-spacing: -0.5px; }
+        .form-container h3 { text-align: center; color: var(--text-muted); font-size: 16px; margin-bottom: 32px; font-weight: 500; }
+        .error-msg { color: #b91c1c; text-align: center; font-weight: 600; margin-bottom: 20px; background: #fef2f2; padding: 12px; border-radius: 10px; border: 1px solid #fecaca; }
+
+        /* Layout */
+        #dashboard-view { display: flex; height: 100vh; width: 100%; }
+
+        /* Sidebar */
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--white); display: flex; flex-direction: column; padding: 32px 24px; box-sizing: border-box; box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 10; }
+        .sidebar-header { font-size: 26px; font-weight: 800; color: var(--white); margin-bottom: 48px; padding-left: 12px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px; }
+        .sidebar-header::before { content: ''; display: block; width: 12px; height: 24px; background: var(--active-blue); border-radius: 4px; }
+        .nav-item { display: flex; align-items: center; padding: 14px 18px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; color: #94a3b8; font-weight: 500; font-size: 15px; }
+        .nav-item:hover { background: var(--sidebar-hover); color: var(--white); transform: translateX(4px); }
+        .nav-item.active { background-color: var(--active-blue); color: var(--white); font-weight: 600; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+        .nav-item.secondary-active { background: var(--active-dark); color: var(--white); font-weight: 600; }
+        .nav-item-icon { margin-right: 16px; font-size: 20px; display: flex; align-items: center; justify-content: center; opacity: 0.9; }
+        .logout-link { margin-top: auto; color: #fca5a5; padding: 14px 18px; border-radius: 12px; transition: all 0.3s ease; display: flex; align-items: center; font-weight: 600; }
+        .logout-link:hover { background-color: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        /* Main Content */
+        .main-container { flex: 1; display: flex; flex-direction: column; padding: 48px 56px; box-sizing: border-box; overflow-y: auto; animation: fadeUp 0.5s ease-out; }
+        .main-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
+        .main-header-title { font-size: 32px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px; }
+        .main-header-subtitle { color: var(--text-muted); margin: 8px 0 0; font-size: 16px; }
+        
+        .add-btn { background-color: var(--active-blue); color: var(--white); padding: 14px 28px; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .add-btn:hover { background-color: var(--active-blue-hover); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4); }
+
+        /* Cards & Tables */
+        .dashboard-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px; }
+        .card { background-color: var(--white); padding: 28px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02), 0 10px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; border: 1px solid var(--border-light); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px rgba(0,0,0,0.05), 0 15px 25px rgba(0,0,0,0.03); }
+        .card-header { font-size: 13px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; letter-spacing: 0.5px; }
+        .card-value { font-size: 36px; font-weight: 800; color: #0f172a; letter-spacing: -1px; }
+        .card.vehicles .card-value { color: var(--active-blue); }
+        
+        .inventory-section { background-color: var(--white); padding: 32px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02), 0 10px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-light); margin-bottom: 32px; }
+        .inventory-header { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 24px; letter-spacing: -0.3px; }
+        .vehicle-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; }
+        .vehicle-table th { text-align: left; padding: 18px 16px; border-bottom: 2px solid var(--border-light); color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        .vehicle-table td { padding: 18px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-weight: 500; transition: background-color 0.2s; }
+        .vehicle-table tbody tr:hover td { background-color: #f8fafc; cursor: default; }
+        .vehicle-table tbody tr:last-child td { border-bottom: none; }
+
+        /* Badges */
+        .type-badge { padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; min-width: 60px; text-transform: capitalize; }
+        .type-badge.bus { background-color: #e0f2fe; color: #0284c7; }
+        .type-badge.truck { background-color: #ffedd5; color: #c2410c; }
+        
+        .status-badge { padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+        .status-badge::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; }
+        .status-badge.completed { background-color: #dcfce7; color: #166534; }
+        .status-badge.completed::before { background-color: #166534; }
+        .status-badge.progress { background-color: #fef3c7; color: #b45309; }
+        .status-badge.progress::before { background-color: #b45309; }
+        .status-badge.planned { background-color: #e0f2fe; color: #0369a1; }
+        .status-badge.planned::before { background-color: #0369a1; }
+
+        /* Inputs & Modals */
+        label { font-weight: 600; color: #475569; display: block; margin-bottom: 8px; font-size: 14px; }
+        input, select { width: 100%; padding: 14px 16px; margin-bottom: 24px; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 15px; font-family: inherit; outline: none; background-color: #f8fafc; transition: all 0.3s ease; color: #0f172a; }
+        input:focus, select:focus { border-color: var(--active-blue); background-color: var(--white); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); }
+        
+        .login-btn, .save-btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 8px; color: white; letter-spacing: 0.3px; }
+        .login-btn { background: linear-gradient(135deg, var(--active-blue) 0%, #2563eb 100%); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
+        .save-btn { background: linear-gradient(135deg, var(--active-blue) 0%, #2563eb 100%); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
+        
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .modal-content { background-color: var(--white); margin: 4% auto; padding: 48px; width: 100%; max-width: 500px; border-radius: 24px; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.15); animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 90vh; overflow-y: auto;}
+        .close-modal { position: absolute; top: 24px; right: 28px; color: #94a3b8; font-size: 32px; font-weight: 400; cursor: pointer; transition: color 0.2s; line-height: 1; }
+        .close-modal:hover { color: #0f172a; }
+        .modal h2 { margin-top: 0; font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 30px; letter-spacing: -0.5px; }
+    </style>
+</head>
+<body>
+
+    {% if not logged_in %}
+    <div id="login-view">
+        <div class="form-container">
+            <h1>TMS Portal</h1>
+            <h3>Please log in to manage transport</h3>
+            {% if error %} <div class="error-msg">{{ error }}</div> {% endif %}
+            <form action="/login" method="POST">
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Enter username" required>
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Enter password" required>
+                <button type="submit" class="login-btn">Secure Login</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    
+    <div id="dashboard-view">
+        <div class="sidebar">
+            <div class="sidebar-header">TMS Admin</div>
+            
+            <a href="/">
+                <div class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                    <span class="nav-item-icon">📊</span> <span class="nav-item-text">Inventory Dashboard</span>
+                </div>
+            </a>
+            <a href="/people">
+                <div class="nav-item {% if active_page == 'people' %}secondary-active{% endif %}">
+                    <span class="nav-item-icon">👥</span> <span class="nav-item-text">Manage People</span>
+                </div>
+            </a>
+            <a href="/assignments">
+                <div class="nav-item {% if active_page == 'assignments' %}secondary-active{% endif %}">
+                    <span class="nav-item-icon">🚚</span> <span class="nav-item-text">Assignments</span>
+                </div>
+            </a>
+            <a href="/revenue">
+                <div class="nav-item {% if active_page == 'revenue' %}secondary-active{% endif %}">
+                    <span class="nav-item-icon">💰</span> <span class="nav-item-text">Revenue Reports</span>
+                </div>
+            </a>
+            
+            <a href="/logout" class="logout-link">
+                <span class="nav-item-icon">🔓</span> Logout
+            </a>
+        </div>
+
+        <div class="main-container">
+            {% if active_page == 'dashboard' %}
+                <div class="main-header">
+                    <div class="header-title-container">
+                        <h1 class="main-header-title">Fleet Operations</h1>
+                        <p class="main-header-subtitle">Welcome back! Manage your dynamic vehicle fleet here.</p>
+                    </div>
+                    <button class="add-btn" type="button" onclick="document.getElementById('addVehicleModal').style.display='block'"><span>+</span> Add New Vehicle</button>
+                </div>
+                <div class="dashboard-cards">
+                    <div class="card vehicles"><span class="card-header">Total Vehicles</span><span class="card-value">{{ data.total_vehicles }}</span></div>
+                    <div class="card revenue"><span class="card-header">Total Revenue (FY)</span><span class="card-value">{{ data.total_revenue }}</span></div>
+                    <div class="card assignments"><span class="card-header">Active Assignments</span><span class="card-value" style="color: #f59e0b;">{{ data.active_assignments }}</span></div>
+                </div>
+                <div class="inventory-section">
+                    <div class="inventory-header">Live Vehicle Inventory</div>
+                    <table class="vehicle-table">
+                        <thead>
+                            <tr><th>V-ID</th><th>Vehicle Type</th><th>Plate Number</th><th>Capacity Info</th><th>Fare / KM</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for vehicle in data.detailed_vehicles %}
+                            <tr>
+                                <td style="color: #64748b; font-weight: 600;">#{{ vehicle.vehicle_id }}</td>
+                                <td><span class="type-badge {{ vehicle.type | lower }}">{{ vehicle.type }}</span></td>
+                                <td style="font-weight: 700; color: #0f172a;">{{ vehicle.vehicle_num }}</td>
+                                <td>{{ vehicle.display_capacity }}</td>
+                                <td style="font-weight: 700; color: #10b981;">₹ {{ vehicle.fare_per_km }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% elif active_page == 'people' %}
+                <div class="main-header">
+                    <div class="header-title-container">
+                        <h1 class="main-header-title">Manage People</h1>
+                        <p class="main-header-subtitle">View all registered Drivers and Corporate Customers.</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="add-btn" type="button" onclick="document.getElementById('addDriverModal').style.display='block'"><span>+</span> Add Driver</button>
+                        <button class="add-btn" type="button" onclick="document.getElementById('addCustomerModal').style.display='block'" style="background: var(--success); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"><span>+</span> Add Customer</button>
+                    </div>
+                </div>
+                
+                <div class="inventory-section">
+                    <div class="inventory-header">Registered Drivers</div>
+                    <table class="vehicle-table">
+                        <thead><tr><th>ID</th><th>Name</th><th>License</th><th>Phone</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for driver in data.drivers %}
+                            <tr>
+                                <td style="color: #64748b; font-weight: 600;">#{{ driver.driver_id }}</td>
+                                <td style="font-weight: 700; color: #0f172a;">{{ driver.first_name }} {{ driver.last_name }}</td>
+                                <td>{{ driver.license_number }}</td>
+                                <td>{{ driver.phone_number }}</td>
+                                <td><span style="color: #10b981; font-weight: 700;">{{ driver.status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="inventory-section">
+                    <div class="inventory-header">Corporate Customers</div>
+                    <table class="vehicle-table">
+                        <thead><tr><th>ID</th><th>Company Name</th><th>Contact Person</th><th>Phone</th></tr></thead>
+                        <tbody>
+                            {% for customer in data.customers %}
+                            <tr>
+                                <td style="color: #64748b; font-weight: 600;">#{{ customer.customer_id }}</td>
+                                <td style="font-weight: 700; color: #0f172a;">{{ customer.company_name }}</td>
+                                <td>{{ customer.contact_person }}</td>
+                                <td>{{ customer.phone }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% elif active_page == 'assignments' %}
+                <div class="main-header">
+                    <div class="header-title-container">
+                        <h1 class="main-header-title">Active & Past Assignments</h1>
+                        <p class="main-header-subtitle">Track where your vehicles are going.</p>
+                    </div>
+                    <button class="add-btn" type="button" onclick="document.getElementById('addAssignmentModal').style.display='block'" style="background: var(--warning); color: #fff; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);"><span>+</span> New Assignment</button>
+                </div>
+                <div class="inventory-section">
+                    <table class="vehicle-table">
+                        <thead><tr><th>ID</th><th>Vehicle</th><th>Driver</th><th>Client</th><th>Route</th><th>Fare</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for assign in data %}
+                            <tr>
+                                <td style="color: #64748b; font-weight: 600;">#{{ assign.assignment_id }}</td>
+                                <td style="font-weight: 700; color: #0f172a;">{{ assign.vehicle_num }}</td>
+                                <td>{{ assign.first_name }} {{ assign.last_name }}</td>
+                                <td>{{ assign.company_name }}</td>
+                                <td>{{ assign.start_location }} ➔ {{ assign.end_location }}</td>
+                                <td style="font-weight: 600;">₹{{ assign.total_fare }}</td>
+                                <td>
+                                    <span class="status-badge 
+                                        {% if assign.status == 'Completed' %}completed
+                                        {% elif assign.status == 'In Progress' %}progress
+                                        {% else %}planned{% endif %}">
+                                        {{ assign.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% elif active_page == 'revenue' %}
+                <div class="main-header">
+                    <div class="header-title-container">
+                        <h1 class="main-header-title">Advanced Revenue Reports</h1>
+                        <p class="main-header-subtitle">Analytics built from database SQL aggregations.</p>
+                    </div>
+                </div>
+                
+                <div style="display:flex; gap: 24px; flex-wrap: wrap;">
+                    <div class="inventory-section" style="flex: 1; min-width: 400px;">
+                        <div class="inventory-header">Revenue by Vehicle Type</div>
+                        <table class="vehicle-table">
+                            <thead><tr><th>Type</th><th>Trips</th><th>Total Revenue</th></tr></thead>
+                            <tbody>
+                                {% for rev in data.revenue_by_type %}
+                                <tr>
+                                    <td><span class="type-badge {{ rev.Vehicle_Type | lower }}">{{ rev.Vehicle_Type }}</span></td>
+                                    <td style="font-weight: 500;">{{ rev.Total_Trips }}</td>
+                                    <td style="font-weight: 700; color: var(--success)">₹{{ rev.Total_Revenue }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="inventory-section" style="flex: 1; min-width: 400px;">
+                        <div class="inventory-header">Top Customers (Billing)</div>
+                        <table class="vehicle-table">
+                            <thead><tr><th>Company</th><th>Bookings</th><th>Total Billed</th></tr></thead>
+                            <tbody>
+                                {% for cust in data.customer_billing %}
+                                <tr>
+                                    <td style="font-weight: 700; color: #0f172a;">{{ cust.company_name }}</td>
+                                    <td style="font-weight: 500;">{{ cust.Total_Bookings }}</td>
+                                    <td style="font-weight: 700; color: var(--active-blue)">₹{{ cust.Total_Billed }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endif %}
+
+    <div id="addVehicleModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="document.getElementById('addVehicleModal').style.display='none'">&times;</span>
+            <h2>Add New Vehicle</h2>
+            <form action="/add_vehicle" method="POST">
+                <label>Vehicle ID (Must be unique)</label>
+                <input type="number" name="v_id" placeholder="e.g. 144" required>
+                
+                <label>Category</label>
+                <select name="v_type" id="vTypeSelect" onchange="toggleCapacityInputs()" required>
+                    <option value="Bus">Bus</option>
+                    <option value="Truck">Truck</option>
+                </select>
+                
+                <label>Plate Number</label>
+                <input type="text" name="v_num" placeholder="e.g. MH-12-AB-1234" required>
+                
+                <div id="busSeatsInput">
+                    <label>Seats Capacity</label>
+                    <input type="number" name="seats" id="seatsInput" placeholder="Enter total seats">
+                </div>
+                
+                <div id="truckLoadInput" style="display:none;">
+                    <label>Max Load Capacity (Tons)</label>
+                    <input type="number" step="0.01" name="load" id="loadInput" placeholder="Enter max load">
+                </div>
+                
+                <label>Fare per KM (₹)</label>
+                <input type="number" step="0.01" name="fare" placeholder="0.00" required>
+                
+                <button type="submit" class="save-btn">Save Vehicle</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addDriverModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="document.getElementById('addDriverModal').style.display='none'">&times;</span>
+            <h2>Add New Driver</h2>
+            <form action="/add_driver" method="POST">
+                <label>Driver ID</label>
+                <input type="number" name="d_id" placeholder="e.g. 201" required>
+                <label>First Name</label>
+                <input type="text" name="fname" placeholder="John" required>
+                <label>Last Name</label>
+                <input type="text" name="lname" placeholder="Doe" required>
+                <label>License Number</label>
+                <input type="text" name="license" placeholder="DL-14-123456" required>
+                <label>Phone Number</label>
+                <input type="text" name="phone" placeholder="9876543210" required>
+                <button type="submit" class="save-btn">Save Driver</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addCustomerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="document.getElementById('addCustomerModal').style.display='none'">&times;</span>
+            <h2>Add Corporate Customer</h2>
+            <form action="/add_customer" method="POST">
+                <label>Customer ID</label>
+                <input type="number" name="c_id" placeholder="e.g. 301" required>
+                <label>Company Name</label>
+                <input type="text" name="cname" placeholder="Acme Corp" required>
+                <label>Contact Person</label>
+                <input type="text" name="contact" placeholder="Jane Smith" required>
+                <label>Phone Number</label>
+                <input type="text" name="phone" placeholder="9876543210" required>
+                <button type="submit" class="save-btn" style="background: linear-gradient(135deg, var(--success) 0%, #059669 100%);">Save Customer</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addAssignmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="document.getElementById('addAssignmentModal').style.display='none'">&times;</span>
+            <h2>Create Assignment</h2>
+            <form action="/add_assignment" method="POST">
+                <label>Assignment ID</label>
+                <input type="number" name="a_id" placeholder="e.g. 501" required>
+                
+                <div style="display:flex; gap: 12px;">
+                    <div style="flex: 1;">
+                        <label>Vehicle ID</label>
+                        <input type="number" name="v_id" placeholder="e.g. 144" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Driver ID</label>
+                        <input type="number" name="d_id" placeholder="e.g. 201" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Customer ID</label>
+                        <input type="number" name="c_id" placeholder="e.g. 301" required>
+                    </div>
+                </div>
+
+                <label>Start Location</label>
+                <input type="text" name="start_loc" placeholder="City A" required>
+                <label>End Location</label>
+                <input type="text" name="end_loc" placeholder="City B" required>
+                
+                <label>Status</label>
+                <select name="status" required>
+                    <option value="Planned">Planned</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                </select>
+
+                <label>Total Fare (₹)</label>
+                <input type="number" step="0.01" name="fare" placeholder="e.g. 5000" required>
+                
+                <button type="submit" class="save-btn" style="background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%); color: #fff;">Create Assignment</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Form logic for Vehicle modal
+        function toggleCapacityInputs() {
+            let t = document.getElementById('vTypeSelect').value;
+            document.getElementById('busSeatsInput').style.display = t == 'Bus' ? 'block' : 'none';
+            document.getElementById('truckLoadInput').style.display = t == 'Truck' ? 'block' : 'none';
+        }
+
+        // Close modals if user clicks outside of them
+        window.onclick = function(e) { 
+            if(e.target == document.getElementById('addVehicleModal')) document.getElementById('addVehicleModal').style.display = "none"; 
+            if(e.target == document.getElementById('addDriverModal')) document.getElementById('addDriverModal').style.display = "none"; 
+            if(e.target == document.getElementById('addCustomerModal')) document.getElementById('addCustomerModal').style.display = "none"; 
+            if(e.target == document.getElementById('addAssignmentModal')) document.getElementById('addAssignmentModal').style.display = "none"; 
+        }
+    </script>
+</body>
+</html>
